@@ -244,6 +244,9 @@ and [<Class>] internal FSharpEntity =
     /// Get all the interface implementations, by walking the type hierarchy
     member AllInterfaces : IList<FSharpType>  
 
+    /// Check if the entity inherits from System.Attribute in its type hierarchy
+    member IsAttributeType : bool
+
     /// Get the base type, if any 
     member BaseType : FSharpType option
 
@@ -268,11 +271,14 @@ and [<Class>] internal FSharpEntity =
     /// Indicates if the type is a delegate with the given Invoke signature 
     member FSharpDelegateSignature : FSharpDelegateSignature
 
-      /// Get the declared accessibility of the type
+    /// Get the declared accessibility of the type
     member Accessibility: FSharpAccessibility 
 
-      /// Get the declared accessibility of the representation, not taking signatures into account 
+    /// Get the declared accessibility of the representation, not taking signatures into account 
     member RepresentationAccessibility: FSharpAccessibility
+
+    /// Get all compilation paths, taking `Module` suffixes into account.
+    member AllCompilationPaths : string list
 
 /// Represents a delegate signature in an F# symbol
 and [<Class>] internal FSharpDelegateSignature =

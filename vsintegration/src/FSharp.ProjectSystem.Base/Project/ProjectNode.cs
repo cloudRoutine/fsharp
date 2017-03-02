@@ -2268,7 +2268,7 @@ namespace Microsoft.VisualStudio.FSharp.ProjectSystem
             {
                 this.SetCurrentConfiguration();
                 this.UpdateMSBuildState();
-                var result = this.InvokeMsBuild(ProjectFileConstants.AllProjectOutputGroups, false);
+                var result = this.InvokeMsBuild(ProjectFileConstants.AllProjectOutputGroups);
                 if (result.ProjectInstance != null) return result.ProjectInstance.GetPropertyValue(propertyName);
             };
             return this.GetProjectProperty(propertyName, true);
@@ -2947,9 +2947,7 @@ namespace Microsoft.VisualStudio.FSharp.ProjectSystem
                 this.ProcessCustomBuildActions();
 
                 this.ProcessFilesAndFolders();
-
-
-
+                
                 this.LoadNonBuildInformation();
 
                 this.InitSccInfo();
@@ -3143,11 +3141,6 @@ namespace Microsoft.VisualStudio.FSharp.ProjectSystem
         [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "Ms")]
         internal virtual BuildResult InvokeMsBuild(string target, IEnumerable<KeyValuePair<string, string>> extraProperties = null)
         {
-            return InvokeMsBuild(target, false, extraProperties);
-        }
-
-        internal virtual BuildResult InvokeMsBuild(string target, bool isBeingCalledByComputeSourcesAndFlags, IEnumerable<KeyValuePair<string, string>> extraProperties = null)
-        {
             UIThread.MustBeCalledFromUIThread();
             ProjectInstance projectInstance = null;
 
@@ -3156,10 +3149,6 @@ namespace Microsoft.VisualStudio.FSharp.ProjectSystem
             if (submission != null)
             {
                 MSBuildResult result = (submission.BuildResult.OverallResult == BuildResultCode.Success) ? MSBuildResult.Successful : MSBuildResult.Failed;
-                if (!isBeingCalledByComputeSourcesAndFlags)
-                {
-                    this.ComputeSourcesAndFlags();
-                }
                 return new BuildResult(result, projectInstance);
             }
             else
@@ -5459,8 +5448,13 @@ namespace Microsoft.VisualStudio.FSharp.ProjectSystem
             {
                 return VSConstants.E_FAIL;
             }
-            //Fail if the document names passed are null.
+            
+            // Fail if the document names passed are null.
             if (oldMkDoc == null || newMkDoc == null)
+                return VSConstants.E_INVALIDARG;
+
+            // Fail if the document names passed are equal.
+            if (oldMkDoc == newMkDoc)
                 return VSConstants.E_INVALIDARG;
 
             int hr = VSConstants.S_OK;
@@ -6135,16 +6129,31 @@ namespace Microsoft.VisualStudio.FSharp.ProjectSystem
             return VSConstants.S_OK;
         }
 
+        public bool IsUsingMicrosoftNetSdk()
+        {
+            // Nasty hack to see if we are using dotnet sdk, the SDK team will add a property in the future.
+            var c = GetProjectProperty("MSBuildAllProjects");
+            if (!string.IsNullOrWhiteSpace(c))
+            {
+                return c.Contains("Microsoft.NET.Sdk.props");
+            }
+            return false;
+        }
+
         public int UpgradeProject(uint grfUpgradeFlags)
         {
-            var hasTargetFramework = IsTargetFrameworkInstalled();
-            if (!hasTargetFramework)
+            if (!IsUsingMicrosoftNetSdk())
             {
-                hasTargetFramework = ShowRetargetingDialog();
+                var hasTargetFramework = IsTargetFrameworkInstalled();
+                if (!hasTargetFramework)
+                {
+                    hasTargetFramework = ShowRetargetingDialog();
+                }
+                // VSConstants.OLE_E_PROMPTSAVECANCELLED causes the shell to leave project unloaded
+                return hasTargetFramework ? VSConstants.S_OK : VSConstants.OLE_E_PROMPTSAVECANCELLED;
             }
-            // VSConstants.OLE_E_PROMPTSAVECANCELLED causes the shell to leave project unloaded
-            return hasTargetFramework ? VSConstants.S_OK : VSConstants.OLE_E_PROMPTSAVECANCELLED;
-        }
+            return VSConstants.S_OK;
+}
 
         /// <summary>
         /// Initialize projectNode

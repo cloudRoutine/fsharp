@@ -30,6 +30,7 @@ type DocumentDiagnosticAnalyzerTests()  =
         IsIncompleteTypeCheckEnvironment = true
         UseScriptResolutionRules = false
         LoadTime = DateTime.MaxValue
+        OriginalLoadReferences = []
         UnresolvedReferences = None
         ExtraProjectInfo = None
     }
@@ -231,7 +232,7 @@ let x: float = 1.2(*start*).(*end*)3
 let gDateTime (arr: (*start*)DateTime(*end*)[]) =
     arr.[0]
             """,
-            expectedMessage = "The type 'DateTime' is not defined")
+            expectedMessage = "The type 'DateTime' is not defined.")
             
     [<Test>]
     member public this.Error_CyclicalDeclarationDoesNotCrash() = 
