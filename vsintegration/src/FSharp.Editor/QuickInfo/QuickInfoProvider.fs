@@ -54,21 +54,26 @@ type internal SourceLink(run) as this =
             match value with 
             | :? Color as c when targetType = typeof<Color> ->
                 // return same color but slightly transparent
-                Color.FromArgb(90uy, c.R, c.G, c.B) :> _
+                Color.FromArgb(160uy, c.R, c.G, c.B) :> _
             | _ -> DependencyProperty.UnsetValue
         member this.ConvertBack(_,_,_,_) = DependencyProperty.UnsetValue }
     let underlineBrush = Media.SolidColorBrush()
     do BindingOperations.SetBinding(underlineBrush, SolidColorBrush.ColorProperty,
                                     Binding("Foreground.Color", Source = this, Converter = lessOpacity)) |> ignore
-    let slightUnderline = TextDecoration(Location = TextDecorationLocation.Underline, PenOffset = 1.0, Pen = Pen(Brush = underlineBrush))
-    do this.TextDecorations <- TextDecorationCollection [slightUnderline]
+    let dottedUnderline = 
+        TextDecoration(Location = TextDecorationLocation.Underline, PenOffset = 1.0, Pen = Pen(Brush = underlineBrush, DashStyle = DashStyle([1.0; 5.0], 0.0)))
+        |>List.singleton |> TextDecorationCollection
+    let underline = 
+        TextDecoration(Location = TextDecorationLocation.Underline, PenOffset = 1.0, Pen = Pen(Brush = underlineBrush))
+        |>List.singleton |> TextDecorationCollection
+    do this.TextDecorations <- dottedUnderline
 
-    override this.OnMouseEnter(e) = 
+    override this.OnMouseEnter(e) =
+        this.TextDecorations <- underline
         base.OnMouseEnter(e)
-        this.TextDecorations <- TextDecorations.Underline
-    override this.OnMouseLeave(e) = 
+    override this.OnMouseLeave(e) =
+        this.TextDecorations <- dottedUnderline
         base.OnMouseLeave(e)
-        this.TextDecorations <- TextDecorationCollection [slightUnderline]
 
 [<ExportQuickInfoProvider(PredefinedQuickInfoProviderNames.Semantic, FSharpCommonConstants.FSharpLanguageName)>]
 type internal FSharpQuickInfoProvider 
