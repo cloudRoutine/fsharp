@@ -176,7 +176,7 @@ type internal RoamingProfileStorageLocation(keyName: string) =
         match languageName with
         | null -> unsubstitutedKeyName
         | _ ->
-            let substituteLanguageName = if languageName = FSharpConstants.FSharpLanguageName then "FSharp" else languageName
+            let substituteLanguageName = if languageName = FSharpCommonConstants.FSharpLanguageName then "FSharp" else languageName
             unsubstitutedKeyName.Replace("%LANGUAGE%", substituteLanguageName)
  
 [<Composition.Shared>]
@@ -194,9 +194,9 @@ type internal FSharpCheckerWorkspaceServiceFactory
                 member this.ProjectInfoManager = projectInfoManager }
 
 type
-    [<Guid(FSharpConstants.packageGuidString)>]
+    [<Guid(FSharpCommonConstants.packageGuidString)>]
     [<ProvideLanguageService(languageService = typeof<FSharpLanguageService>,
-                             strLanguageName = FSharpConstants.FSharpLanguageName,
+                             strLanguageName = FSharpCommonConstants.FSharpLanguageName,
                              languageResourceID = 100,
                              MatchBraces = true,
                              MatchBracesAtCaret = true,
@@ -214,7 +214,7 @@ type
     internal FSharpPackage() =
     inherit AbstractPackage<FSharpPackage, FSharpLanguageService>()
     
-    override this.RoslynLanguageName = FSharpConstants.FSharpLanguageName
+    override this.RoslynLanguageName = FSharpCommonConstants.FSharpLanguageName
 
     override this.CreateWorkspace() = this.ComponentModel.GetService<VisualStudioWorkspaceImpl>()
 
@@ -226,19 +226,19 @@ type
     override this.RegisterMiscellaneousFilesWorkspaceInformation(_) = ()
     
 and 
-    [<Guid(FSharpConstants.languageServiceGuidString)>]
+    [<Guid(FSharpCommonConstants.languageServiceGuidString)>]
     [<ProvideLanguageExtension(typeof<FSharpLanguageService>, ".fs")>]
     [<ProvideLanguageExtension(typeof<FSharpLanguageService>, ".fsi")>]
     [<ProvideLanguageExtension(typeof<FSharpLanguageService>, ".fsx")>]
     [<ProvideLanguageExtension(typeof<FSharpLanguageService>, ".fsscript")>]
     [<ProvideLanguageExtension(typeof<FSharpLanguageService>, ".ml")>]
     [<ProvideLanguageExtension(typeof<FSharpLanguageService>, ".mli")>]
-    [<ProvideEditorExtension(FSharpConstants.editorFactoryGuidString, ".fs", 97)>]
-    [<ProvideEditorExtension(FSharpConstants.editorFactoryGuidString, ".fsi", 97)>]
-    [<ProvideEditorExtension(FSharpConstants.editorFactoryGuidString, ".fsx", 97)>]
-    [<ProvideEditorExtension(FSharpConstants.editorFactoryGuidString, ".fsscript", 97)>]
-    [<ProvideEditorExtension(FSharpConstants.editorFactoryGuidString, ".ml", 97)>]
-    [<ProvideEditorExtension(FSharpConstants.editorFactoryGuidString, ".mli", 97)>]
+    [<ProvideEditorExtension(FSharpCommonConstants.editorFactoryGuidString, ".fs", 97)>]
+    [<ProvideEditorExtension(FSharpCommonConstants.editorFactoryGuidString, ".fsi", 97)>]
+    [<ProvideEditorExtension(FSharpCommonConstants.editorFactoryGuidString, ".fsx", 97)>]
+    [<ProvideEditorExtension(FSharpCommonConstants.editorFactoryGuidString, ".fsscript", 97)>]
+    [<ProvideEditorExtension(FSharpCommonConstants.editorFactoryGuidString, ".ml", 97)>]
+    [<ProvideEditorExtension(FSharpCommonConstants.editorFactoryGuidString, ".mli", 97)>]
     internal FSharpLanguageService(package : FSharpPackage) =
     inherit AbstractLanguageService<FSharpPackage, FSharpLanguageService>(package)
 
@@ -260,8 +260,8 @@ and
     override this.Initialize() =
         base.Initialize()
 
-        this.Workspace.Options <- this.Workspace.Options.WithChangedOption(Completion.CompletionOptions.BlockForCompletionItems, FSharpConstants.FSharpLanguageName, false)
-        this.Workspace.Options <- this.Workspace.Options.WithChangedOption(Shared.Options.ServiceFeatureOnOffOptions.ClosedFileDiagnostic, FSharpConstants.FSharpLanguageName, Nullable false)
+        this.Workspace.Options <- this.Workspace.Options.WithChangedOption(Completion.CompletionOptions.BlockForCompletionItems, FSharpCommonConstants.FSharpLanguageName, false)
+        this.Workspace.Options <- this.Workspace.Options.WithChangedOption(Shared.Options.ServiceFeatureOnOffOptions.ClosedFileDiagnostic, FSharpCommonConstants.FSharpLanguageName, Nullable false)
 
         this.Workspace.DocumentClosed.Add <| fun args ->
             tryRemoveSingleFileProject args.Document.Project.Id 
@@ -331,14 +331,14 @@ and
                 
                 let projectContext = 
                     projectContextFactory.CreateProjectContext(
-                        FSharpConstants.FSharpLanguageName, projectDisplayName, projectFileName, projectGuid, siteProvider, null, errorReporter)
+                        FSharpCommonConstants.FSharpLanguageName, projectDisplayName, projectFileName, projectGuid, siteProvider, null, errorReporter)
 
                 let project = projectContext :?> AbstractProject
 
                 this.SyncProject(project, projectContext, site, forceUpdate=false)
-                site.AdviseProjectSiteChanges(FSharpConstants.FSharpLanguageServiceCallbackName, 
+                site.AdviseProjectSiteChanges(FSharpCommonConstants.FSharpLanguageServiceCallbackName, 
                                               AdviseProjectSiteChanges(fun () -> this.SyncProject(project, projectContext, site, forceUpdate=true)))
-                site.AdviseProjectSiteClosed(FSharpConstants.FSharpLanguageServiceCallbackName, 
+                site.AdviseProjectSiteClosed(FSharpCommonConstants.FSharpLanguageServiceCallbackName, 
                                              AdviseProjectSiteChanges(fun () -> 
                                                 projectInfoManager.ClearProjectInfo(project.Id)
                                                 project.Disconnect()))
@@ -363,17 +363,17 @@ and
             let projectContextFactory = package.ComponentModel.GetService<IWorkspaceProjectContextFactory>();
             let errorReporter = ProjectExternalErrorReporter(projectId, "FS", this.SystemServiceProvider)
 
-            let projectContext = projectContextFactory.CreateProjectContext(FSharpConstants.FSharpLanguageName, projectDisplayName, projectFileName, projectId.Id, hier, null, errorReporter)
+            let projectContext = projectContextFactory.CreateProjectContext(FSharpCommonConstants.FSharpLanguageName, projectDisplayName, projectFileName, projectId.Id, hier, null, errorReporter)
             projectContext.AddSourceFile(fileName)
             
             let project = projectContext :?> AbstractProject
             singleFileProjects.[projectId] <- project
 
-    override this.ContentTypeName = FSharpConstants.FSharpContentTypeName
-    override this.LanguageName = FSharpConstants.FSharpLanguageName
-    override this.RoslynLanguageName = FSharpConstants.FSharpLanguageName
+    override this.ContentTypeName = FSharpCommonConstants.FSharpContentTypeName
+    override this.LanguageName = FSharpCommonConstants.FSharpLanguageName
+    override this.RoslynLanguageName = FSharpCommonConstants.FSharpLanguageName
 
-    override this.LanguageServiceId = new Guid(FSharpConstants.languageServiceGuidString)
+    override this.LanguageServiceId = new Guid(FSharpCommonConstants.languageServiceGuidString)
     override this.DebuggerLanguageId = DebuggerEnvironment.GetLanguageID()
 
     override this.CreateContext(_,_,_,_,_) = raise(System.NotImplementedException())
