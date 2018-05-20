@@ -620,10 +620,12 @@
     <Compile Include="..\service\ServiceInterfaceStubGenerator.fs">
       <Link>Service/ServiceInterfaceStubGenerator.fs</Link>
     </Compile>
+    <Compile Include="..\service\ServiceRecordStubGenerator.fsi">
+      <Link>Service/ServiceRecordStubGenerator.fsi</Link>      
+    </Compile>
     <Compile Include="..\service\ServiceRecordStubGenerator.fs">
       <Link>Service/ServiceRecordStubGenerator.fs</Link>
     </Compile>
-    
     <Compile Include="..\service\ServiceStructure.fsi">
       <Link>Service/ServiceStructure.fsi</Link>
     </Compile>

@@ -187,7 +187,7 @@ module internal RecordStubGenerator =
 
         writer.Dump()
 
-    let private tryFindRecordBindingInParsedInput (pos: pos) (parsedInput: ParsedInput) =
+    let tryFindRecordBindingInParsedInput (pos: pos) (parsedInput: ParsedInput) =
         let inline getIfPosInRange range f =
             if rangeContainsPos range pos then f()
             else None
