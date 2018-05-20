@@ -12,6 +12,34 @@ open Microsoft.FSharp.Compiler.SourceCodeServices
 open Microsoft.FSharp.Compiler.AbstractIL.Internal.Library 
         
 #if !FX_NO_INDENTED_TEXT_WRITER
+
+    module internal CodeGenerationUtils =
+
+        [<Class>]
+        type internal ColumnIndentedTextWriter =
+            new : unit -> ColumnIndentedTextWriter
+            member Write : s:string -> unit
+
+            member Write : s:string * [<ParamArray>]  objs:obj [] -> unit
+
+            member WriteLine :  s:string -> unit
+
+            member WriteLine : s:string * [<ParamArray>] objs: obj [] -> unit
+
+            member WriteBlankLines : int -> unit
+
+            member Indent : int -> unit
+
+            member Unindent : int -> unit 
+
+            member Dump : unit -> string
+
+            interface IDisposable 
+
+        val  (|IndexerArg|) : SynIndexerArg -> SynExpr list
+
+        val (|IndexerArgList|) : SynIndexerArg list -> SynExpr list
+        
 /// Capture information about an interface in ASTs
 [<RequireQualifiedAccess; NoEquality; NoComparison>]
 type internal InterfaceData =

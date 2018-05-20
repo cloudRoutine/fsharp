@@ -18,7 +18,7 @@ module internal CodeGenerationUtils =
     open System.CodeDom.Compiler
 
 
-    type ColumnIndentedTextWriter() =
+    type internal ColumnIndentedTextWriter() =
         let stringWriter = new StringWriter()
         let indentWriter = new IndentedTextWriter(stringWriter, " ")
 
